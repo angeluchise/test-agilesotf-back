@@ -1,0 +1,29 @@
+version: '2.1'
+services:
+  db:
+    image: mysql:5.7
+    env_file: src/environments/db.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./backup:/backup"
+    healthcheck:
+      test: ["CMD", "mysqladmin","-u${MYSQL_USER:-root}","-p${MYSQL_PASSWORD:-root}" ,"ping"]
+      timeout: 20s
+  app:
+    container_name: nestjs_api_dev
+    image: nestjs-api-dev:1.0.0
+    depends_on:
+      - "db"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - "db:db"
+    volumes:
+      - "./:/usr/src/app/"
+    env_file: src/environments/dev.env
+    command: npm run start:dev
+    ports:
+      - "3000:3000"
+      
